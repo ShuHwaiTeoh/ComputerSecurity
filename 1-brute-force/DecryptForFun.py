@@ -31,7 +31,7 @@ if len(sys.argv) is not 3:                                                  #(B)
 
 PassPhrase = "Hopes and dreams of a million years"                          #(C)
 
-BLOCKSIZE = 64                                                              #(D)
+BLOCKSIZE = 16                                                              #(D)
 numbytes = BLOCKSIZE // 8                                                   #(E)
 
 # Reduce the passphrase to a bit array of size BLOCKSIZE:
@@ -51,6 +51,10 @@ if sys.version_info[0] == 3:                                                #(L)
 else:                                                               
     key = raw_input("\nEnter key: ")                                        #(N)
 key = key.strip()                                                           #(O)
+
+# modified
+# key = int(key)
+# key_bv = BitVector(intVal=key, size=16)
 
 # Reduce the key to a bit array of size BLOCKSIZE:
 key_bv = BitVector(bitlist = [0]*BLOCKSIZE)                                 #(P)
