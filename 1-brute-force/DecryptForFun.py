@@ -31,7 +31,7 @@ if len(sys.argv) is not 3:                                                  #(B)
 
 PassPhrase = "Hopes and dreams of a million years"                          #(C)
 
-BLOCKSIZE = 16                                                              #(D)
+BLOCKSIZE = 64                                                         #(D)
 numbytes = BLOCKSIZE // 8                                                   #(E)
 
 # Reduce the passphrase to a bit array of size BLOCKSIZE:
