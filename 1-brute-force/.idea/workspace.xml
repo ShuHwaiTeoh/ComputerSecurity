@@ -2,14 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e09b847a-c7b0-4417-8101-2376f183060b" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/HW1(2).pdf" beforeDir="false" afterPath="$PROJECT_DIR$/HW1(2).pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/codePic.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/codePic.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cryptBreak.py" beforeDir="false" afterPath="$PROJECT_DIR$/cryptBreak.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hw01.docx" beforeDir="false" afterPath="$PROJECT_DIR$/hw01.docx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hw01.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/hw01.pdf" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../mt1.docx" beforeDir="false" afterPath="$PROJECT_DIR$/../mt1.docx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../~$mt1.docx" beforeDir="false" afterPath="$PROJECT_DIR$/../~$mt1.docx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../~$mt1.docx" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -22,7 +16,7 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/cryptBreak.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="342">
+            <state relative-caret-position="343">
               <caret line="51" selection-start-line="51" selection-end-line="53" selection-end-column="35" />
             </state>
           </provider>
@@ -31,8 +25,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="300">
-              <caret line="10" column="30" lean-forward="true" selection-start-line="10" selection-start-column="30" selection-end-line="10" selection-end-column="30" />
+            <state relative-caret-position="270">
+              <caret line="10" column="30" selection-start-line="10" selection-start-column="30" selection-end-line="10" selection-end-column="30" />
               <folding>
                 <element signature="e#0#17#0" expanded="true" />
               </folding>
@@ -169,6 +163,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.17767504" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -211,20 +206,20 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test.py">
+    <entry file="file://$PROJECT_DIR$/cryptBreak.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="300">
-          <caret line="10" column="30" lean-forward="true" selection-start-line="10" selection-start-column="30" selection-end-line="10" selection-end-column="30" />
-          <folding>
-            <element signature="e#0#17#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="343">
+          <caret line="51" selection-start-line="51" selection-end-line="53" selection-end-column="35" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/cryptBreak.py">
+    <entry file="file://$PROJECT_DIR$/test.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="342">
-          <caret line="51" selection-start-line="51" selection-end-line="53" selection-end-column="35" />
+        <state relative-caret-position="270">
+          <caret line="10" column="30" selection-start-line="10" selection-start-column="30" selection-end-line="10" selection-end-column="30" />
+          <folding>
+            <element signature="e#0#17#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
