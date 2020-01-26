@@ -48,3 +48,13 @@ def encrypt():
             algorithm for both encryption and decryption (see Fig.
             3 page 15). The two rules shown above include this swap.
             '''
+if __name__ == "__main__":
+    with open("s-box-tables.txt", "r") as f:
+        d = f.readlines()
+    for i in d:
+        l = i.strip('\n').split(" ")
+        if 'S' not in i:
+            r = [int(j) for j in l if j]
+        else:
+            r = l
+        print(r)

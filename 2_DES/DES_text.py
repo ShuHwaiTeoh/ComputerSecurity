@@ -79,20 +79,21 @@ pbox_permutation = [15,6,19,20,28,11,27,16,
 # Encrypt key with permutation
 def get_encryption_key():
     # read key string from key.txt and turn it into a bitVector
-    FILEIN = open(sys.argv[3])
-    key_bv = BitVector(hexstring=FILEIN.read())
-    #extract the beginning 7 bits of each bytes and permute them
+    with open(sys.argv[3], "r", encoding="UTF-8") as f:
+        key = f.read().strip()
+    key_bv = BitVector(textstring=key)
+    # extract the beginning 7 bits of each bytes and permute them
     key_bv = key_bv.permute(key_permutation_1)
-    return key_bv #return the 56-bit encrypted key
+    return key_bv# return the 56-bit encrypted key
 
 # generate keys for each round
 def extract_round_keys(encryption_key):
     round_keys = []
     key = encryption_key.deep_copy()
     for round_count in range(16):
-        #divide the 56 relevant key bits into two 28 bit halves
+        # divide the 56 relevant key bits into two 28 bit halves
         [LKey, RKey] = key.divide_into_two()
-        #circularly shift to the left each half by one or two bits,
+        # circularly shift to the left each half by one or two bits,
         # depending on the round
         shift = shifts_for_round_key_gen[round_count]
         LKey << shift
@@ -109,9 +110,14 @@ def substitute(newRE_xor):
     Feistel Function dotted box in Figure 4 of Lecture 3 notes.
     """
     output = BitVector(size=32)
+	# divide the right half into 8 4-bit segments
     segments = [newRE_xor[x*6:x*6+6] for x in range(8)]
     for sindex in range(len(segments)):
+		# attach the last bit of the previous segment and
+		# the beginning bit of the next segment to the current segments
+		# the first bit and the last bit of the 6-bit segment decide the row
         row = 2*segments[sindex][0] + segments[sindex][-1]
+		# the 4 bits at the mid decide the column
         column = int(segments[sindex][1:-1])
         output[sindex*4:sindex*4+4] = BitVector(intVal=s_boxes[sindex][row][column], size=4)
     return output
@@ -121,22 +127,29 @@ def DES(fileName, round_keys):
     output_bv = BitVector(size=0)
     while input_bv.more_to_read:
         bv = input_bv.read_bits_from_file(64)
-        if bv.getsize() > 0:
+        if bv.length() > 0:
             # padding with zeros
-            if bv.getsize() < 64:
+            if bv.length() < 64:
                 bv += BitVector(bitlist=[0] * (64-len(bv)))
             for i in range(16):
+                # if i == 0:
+                #     print("before:", bv.get_bitvector_in_hex())
                 [LE, RE] = bv.divide_into_two()
                 # expand the 32-bit block into 48 bits
                 newRE = RE.permute(expansion_permutation)
-                # XOR with round key
-                newRE_xor = newRE.bv_xor(round_keys[i])
+                # key mixing: XOR with round key
+                newRE_xor = newRE ^ round_keys[i]
                 # S-box substitution takes the 48 bits back down to 32 bits
                 newRE_sub = substitute(newRE_xor)
                 # P-box
                 newRE_modified = newRE_sub.permute(pbox_permutation)
-                # save output of round to output bitVector
-                output_bv += newRE_modified + LE
+                newRE_modified = LE ^ newRE_modified
+                bv = RE + newRE_modified
+                # if i == 0:
+                #     print(round_keys[i].get_bitvector_in_hex())
+                #     print("after:", bv.get_bitvector_in_hex())
+            [LE, RE] = bv.divide_into_two()
+            output_bv += RE + LE
     return output_bv
 
 
@@ -148,12 +161,16 @@ if __name__ == "__main__":
     # encrypt the message.txt with DES
     if sys.argv[1] == "-e":
         encryptedText = DES(sys.argv[2], round_keys)
-        FILEOUT = open(sys.argv[4], 'w')
-        FILEOUT.write(encryptedText)
-        FILEOUT.close()
+        with open(sys.argv[4], "wb") as f:
+            encryptedText.write_to_file(f)
+        # FILEOUT = open(sys.argv[4], 'w')
+        # FILEOUT.write(encryptedText.get_text_from_bitvector())
+        # FILEOUT.close()
     # decrypt the message.txt with DES
     elif sys.argv[1] == "-d":
-        decryptedText = DES(sys.argv[2], round_keys.reverse())
-        FILEOUT = open(sys.argv[4], 'w')
-        FILEOUT.write(decryptedText)
-        FILEOUT.close()
+        decryptedText = DES(sys.argv[2], round_keys[::-1])
+        with open(sys.argv[4], "wb") as f:
+            decryptedText.write_to_file(f)
+        # FILEOUT = open(sys.argv[4], 'w')
+        # FILEOUT.write(decryptedText.get_text_from_bitvector())
+        # FILEOUT.close()
