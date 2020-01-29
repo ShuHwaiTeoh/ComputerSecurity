@@ -123,7 +123,6 @@ def DES(data, round_keys):
     for j in range(0, input_bv.length(), 64):
         if input_bv.length() < j+64:
             bv = input_bv[j:] + BitVector(bitlist=[0] * (j+64-input_bv.length()))
-            #bv += BitVector(bitlist=[0] * (j+64-len(bv)))
         else:
             bv = input_bv[j:j+64]
         for i in range(16):
@@ -144,19 +143,40 @@ def DES(data, round_keys):
 
 
 if __name__ == "__main__":
-    #DES_image.py image.ppm key.txt image_enc.ppm
+    # DES_image.py image.ppm key.txt image_enc.ppm
     # read key from file and encrypt the key into a 56-bit vector
     key = get_encryption_key()
     # generate 16 round keys for each round
     round_keys = extract_round_keys(key)
+    # initialize a variable to store the header
     header = b""
     with open(sys.argv[1], "rb") as f:
         for i in range(3):
+            # read the header from image.ppm
             header += f.readline()
+        # read other data from image.ppm
         data = f.read()
-    # encrypt the message.txt with DES
+    # encrypt the image.ppm with DES
     encryptedImg = DES(data, round_keys)
     with open(sys.argv[3], "wb") as f:
         f.write(header)
         encryptedImg.write_to_file(f)
+
+
+    # decrypt the image_enc.ppm with DES
+    # header1 = b""
+    # with open(sys.argv[3], "rb") as f:
+    #     for i in range(3):
+    #         # read the header from image.ppm
+    #         header1 += f.readline()
+    #     # read other data from image.ppm
+    #     data1 = f.read()
+    # decryptedImg = DES(data1, round_keys[::-1])
+    # with open("IMGencMe.txt", "wb") as fp:
+    #     fp.write(header)
+    #     encryptedImg.write_to_file(fp)
+    # with open("deIMG.ppm", "wb") as f:
+    #     f.write(header1)
+    #     decryptedImg.write_to_file(f)
+
 
