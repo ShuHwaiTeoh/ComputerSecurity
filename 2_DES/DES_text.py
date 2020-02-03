@@ -154,7 +154,8 @@ def DES(sign, fileName, round_keys):
             newRE_modified = newRE_modified ^ LE
             # concatenate the two 32-bit blocks and back into a 64-bit block
             bv = RE + newRE_modified
-            # if i == 0 and j == 0:
+            if i == 0 and j == 0:
+                print(round_keys[i].get_bitvector_in_hex())
             #     print("after:", bv.get_bitvector_in_hex())
         # switch the left-hal block and the right-half block before outputting
         [LE, RE] = bv.divide_into_two()
