@@ -79,7 +79,7 @@ pbox_permutation = [15,6,19,20,28,11,27,16,
 # Encrypt key with permutation
 def get_encryption_key():
     # read key string from key.txt and turn it into a bitVector
-    with open(sys.argv[2], "r", encoding="UTF-8") as f:
+    with open(sys.argv[2], "r") as f:
         key = f.read().strip()
     key_bv = BitVector(textstring=key)
     #extract the beginning 7 bits of each bytes and permute them
