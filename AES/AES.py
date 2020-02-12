@@ -237,19 +237,19 @@ def InvSubBytes(bv):
         b1,b2,b3 = [b.deep_copy() for x in range(3)]
         b = (b1 >> 2) ^ (b2 >> 5) ^ (b3 >> 7) ^ d
         check = b.gf_MI(AES_modulus, 8)
-        b = check if isinstance(check, BitVector) else BitVector(intVal=0)
+        b = check if isinstance(check, BitVector) else BitVector(intVal=0, size=8)
         bv_out += b
     return bv_out
 def InvMixColumns(bv):
-        #  Each byte in a column is replaced by two times that byte, 
+    #  Each byte in a column is replaced by two times that byte, 
     # plus three times the next byte, plus the byte that comes next, 
     # plus the byte that follows.
     bv_out = BitVector(size=0)
-    oe = BitVector(hexstring = "0e")
-    ob = BitVector(hexstring = "0b")
-    od = BitVector(hexstring = "0d")
+    oe = BitVector(hexstring = "0E")
+    ob = BitVector(hexstring = "0B")
+    od = BitVector(hexstring = "0D")
     o9 = BitVector(hexstring = "09")
-    m = [[oe,od,ob,o9],[o9,oe,ob,od],[od,o9,oe,ob],[ob,od,o9,oe]]
+    m = [[oe,ob,od,o9],[o9,oe,ob,od],[od,o9,oe,ob],[ob,od,o9,oe]]
     for i in range(4):
         for j in range(4):
             a = m[j][0].gf_multiply_modular(bv[8*i*4:8*i*4+8], AES_modulus, 8)
