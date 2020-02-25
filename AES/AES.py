@@ -146,12 +146,17 @@ def AES_Decrypt(fileName, round_keys):
             bv = input_bv[j:j+128]
         # add round key
         bv = bv ^ round_keys[0]
+        if j==0: print(bv.get_hex_string_from_bitvector())
         # 13 rounds
         for i in range(1,14):
             bv = InvShiftRows(bv)
+            if i==1 and j==0: print(bv.get_hex_string_from_bitvector())
             bv = InvSubBytes(bv)
+            if i==1 and j==0: print(bv.get_hex_string_from_bitvector())
             bv = bv ^ round_keys[i]
+            if i==1 and j==0: print(bv.get_hex_string_from_bitvector())
             bv = InvMixColumns(bv)
+            if i==1 and j==0: print(bv.get_hex_string_from_bitvector())
         #last round
         bv = InvShiftRows(bv)
         bv = InvSubBytes(bv)
