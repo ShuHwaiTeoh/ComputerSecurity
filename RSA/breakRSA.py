@@ -1,214 +1,92 @@
 #!/usr/bin/env/python3
-# Homework Number:  hw05
+# Homework Number:  hw06
 # Name: Shu Hwai Teoh
 # ECN Login: teoh0
 # Due Date: Tuesday 02/25/2020 at 4:29 PM
 import sys
 from BitVector import *
+import rsa
 
-AES_modulus = BitVector(bitstring='100011011')
-subBytesTable = []       # for encryption
+def solve_pRoot(p, x): #O(lgn) solution
+	'''
+	Finds pth root of an integer x.  Uses Binary Search logic.	Starts
+	with a lower bound l and go up until upper bound u.	Breaks the problem into
+	halves depending on the search logic.  The search logic says whether the mid
+	(which is the mid value of l and u) raised to the power to p is less than x or
+	it is greater than x.	Once we reach a mid that when raised to the power p is
+	equal to x, we return mid + 1. 
 
-def genTables():
-    c = BitVector(bitstring='01100011')
-    # d = BitVector(bitstring='00000101')
-    for i in range(0, 256):
-        # For the encryption SBox, find the multiplicative inverse x′= x_in^(-1) in GF(2^8)
-        a = BitVector(intVal = i, size=8).gf_MI(AES_modulus, 8) if i != 0 else BitVector(intVal=0)
-        # For bit scrambling for the encryption SBox entries:
-        # scramble the bits of x′ by XORing x′ with 
-        # four different circularly rotated versions of itself 
-        # and with a special constant byte c = 0x63. 
-        # The four circular rotations are through 4, 5, 6, and 7 bit positions to the right.
-        a1,a2,a3,a4 = [a.deep_copy() for x in range(4)]
-        a ^= (a1 >> 4) ^ (a2 >> 5) ^ (a3 >> 6) ^ (a4 >> 7) ^ c
-        subBytesTable.append(int(a))
+	Author: Shayan Akbar 
+		sakbar at purdue edu
 
-def gen_key_schedule_256(key_bv):
-    # byte_sub_table = gen_subbytes_table()
-    #  We need 60 keywords (each keyword consists of 32 bits) in the key schedule for
-    #  256 bit AES. The 256-bit AES uses the first four keywords to xor the input
-    #  block with.  Subsequently, each of the 14 rounds uses 4 keywords from the key
-    #  schedule. We will store all 60 keywords in the following list:
-    key_words = [None for i in range(60)]
-    round_constant = BitVector(intVal = 0x01, size=8)
-    for i in range(8):
-        key_words[i] = key_bv[i*32 : i*32 + 32]
-    for i in range(8,60):
-        if i%8 == 0:
-            kwd, round_constant = gee(key_words[i-1], round_constant, subBytesTable)
-            key_words[i] = key_words[i-8] ^ kwd
-        elif (i - (i//8)*8) < 4:
-            key_words[i] = key_words[i-8] ^ key_words[i-1]
-        elif (i - (i//8)*8) == 4:
-            key_words[i] = BitVector(size = 0)
-            for j in range(4):
-                key_words[i] += BitVector(intVal = 
-                                 subBytesTable[key_words[i-1][8*j:8*j+8].intValue()], size = 8)
-            key_words[i] ^= key_words[i-8] 
-        elif ((i - (i//8)*8) > 4) and ((i - (i//8)*8) < 8):
-            key_words[i] = key_words[i-8] ^ key_words[i-1]
-        else:
-            sys.exit("error in key scheduling algo for i = %d" % i)
-    return key_words
+	'''
 
-def gee(keyword, round_constant, byte_sub_table):
-    '''
-    This is the g() function for key expension.
-    '''
-    rotated_word = keyword.deep_copy()
-    rotated_word << 8
-    newword = BitVector(size = 0)
-    for i in range(4):
-        newword += BitVector(intVal = byte_sub_table[rotated_word[8*i:8*i+8].intValue()], size = 8)
-    newword[:8] ^= round_constant
-    round_constant = round_constant.gf_multiply_modular(BitVector(intVal = 0x02), AES_modulus, 8)
-    return newword, round_constant
+	#Upper bound u is set to as follows:
+	#We start with the 2**0 and keep increasing the power so that u is 2**1, 2**2, ...
+	#Until we hit a u such that u**p is > x
+	u = 1
+	while u ** p <= x: u *= 2
 
-def keyEncryptExpend(key_file):
-    # read key string from key.txt and turn it into a bitVector
-    with open(key_file, "r") as f:
-        key = f.read().strip()
-    key_bv = BitVector(textstring=key)  
-    key_words = gen_key_schedule_256(key_bv)
-    key_schedule = []
-    #Each 32-bit word of the key schedule is shown as a sequence of 4 one-byte integers
-    for word_index,word in enumerate(key_words):
-        keyword_in_ints = []
-        for i in range(4):
-            keyword_in_ints.append(word[i*8:i*8+8].intValue())
-        # if word_index % 4 == 0: print("\n")
-        # print("word %d:  %s" % (word_index, str(keyword_in_ints)))
-        key_schedule.append(keyword_in_ints)
-    num_rounds = 14
-    round_keys = [None for i in range(num_rounds+1)]
-    # de_round_key = [None for i in range(num_rounds+1)]
-    for i in range(num_rounds+1):
-        round_keys[i] = (key_words[i*4] + key_words[i*4+1] + key_words[i*4+2] + 
-                                    key_words[i*4+3])#.get_bitvector_in_hex()
-        # de_round_key[num_rounds-i] = key_words[i*4+3] + key_words[i*4+2] + key_words[i*4+1] + key_words[i*4]
-    return round_keys #, de_round_key #list of 32-bit bitVector (each round key has 4 words)
+	#Lower bound set to half of upper bound
+	l = u // 2
 
-def AES(iv,header, data, round_keys, out_file):
-    input_bv = BitVector(rawbytes=data)
-    output_bv = BitVector(size=0)
-    bv = iv.deep_copy()
-    count = 0
-    with open(out_file, "wb") as f:
-        f.write(header)
-        # loop through all the input and extract 64 bit at a time
-        for j in range(0, input_bv.length(), 128):
-            if input_bv.length() < j+128:
-                # padding the last byte with 0s
-                plainText = input_bv[j:] + BitVector(bitlist=[0] * (j+128-input_bv.length()))
-            else:
-                plainText = input_bv[j:j+128]
-            # add round key
-            # print(int(bv), flush=True)
-            bv = bv ^ round_keys[0]
-            # print(int(bv), flush=True)
-            # 13 round
-            for i in range(1,14):
-                # substitute bytes
-                if(j==0 and i==2): print(int(bv), flush=True)
-                bv = subBytes(bv)
-                if(j==0 and i==2): print(int(bv), flush=True)
-                bv = shiftRows(bv)
-                if(j==0 and i==2): print(int(bv), flush=True)
-                bv = mixColumns(bv)
-                if(j==0 and i==2): print(int(bv), flush=True)
-                # add round key
-                bv = bv ^ round_keys[i]
-                if(j==0 and i==2): print(int(bv), flush=True)
-            #last round
-            bv = subBytes(bv)
-            bv = shiftRows(bv)
-            bv = bv ^ round_keys[-1]
-            # XOR the encrypted initial vector with plaintext block
-            output_bv = bv ^ plainText
-            # print(bv.get_bitvector_in_hex(), flush=True)
-            # print(output_bv.get_bitvector_in_hex(), flush=True)
-            output_bv.write_to_file(f)
-            # add 1 to the initial vector
-            count += 1
-            bv = BitVector(intVal=(int(iv)+count), size=128)
+	#Keep the search going until upper u becomes less than lower l
+	while l < u:
+		mid = (l + u) // 2
+		mid_pth = mid ** p
+		if l < mid and mid_pth < x:
+			l = mid
+		elif u > mid and mid_pth > x:
+			u = mid
+		else:
+			# Found perfect pth root.
+			return mid
+	return mid + 1
 
-def subBytes(bv):
-    # c = BitVector(bitstring='01100011')
-    # bv_out = BitVector(size=0)
-    # for i in range(0, bv.length(), 8):
-    #     # extract 1 byte at a time, 
-    #     # bv_out += subBytesTable[int(bv[i:i+4]) *10 + int(bv[i+4:i+8])]
-    #     a = bv[i:i+8].gf_MI(AES_modulus, 8) if int(bv[i:i+8]) != 0 else BitVector(intVal=0)
-    #     # For bit scrambling for the encryption SBox entries:
-    #     # scramble the bits of x′ by XORing x′ with 
-    #     # four different circularly rotated versions of itself 
-    #     # and with a special constant byte c = 0x63. 
-    #     # The four circular rotations are through 4, 5, 6, and 7 bit positions to the right.
-    #     a1,a2,a3,a4 = [a.deep_copy() for x in range(4)]
-    #     a ^= (a1 >> 4) ^ (a2 >> 5) ^ (a3 >> 6) ^ (a4 >> 7) ^ c
-    #     bv_out += a
-    bv_out = BitVector(size=0)
-    # extract 1 byte at a time
-    for i in range(0, bv.length(), 8):
-        # use subBytesTable to substitute each byte
-        bv_out += BitVector(intVal=int(subBytesTable[int(bv[i:i+8])]), size=8)
-    return bv_out
-def shiftRows(bv):
-    #(i) not shifting the first row of the state array; 
-    #(ii) circularly shifting the second row by one byte to the left; 
-    #(iii) circularly shifting the third row by two bytes to the left; 
-    #(iv) circularly shifting the last row by three bytes to the left.
-    #[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
-    # -> [0,5,10,15,4,9,14,3,8,13,2,7,12,1,6,11]
-    bv_out = BitVector(size=0)
-    for i in range(4):
-        a = 4*i
-        for j in range(4):
-            b = a + 5*j
-            if b <= 15:
-                bv_out += bv[b*8:b*8+8]
-            else:
-                bv_out += bv[(b-15-1)*8:(b-15-1)*8+8]
-    return bv_out
-def mixColumns(bv):
-    #  Each byte in a column is replaced by two times that byte, 
-    # plus three times the next byte, plus the byte that comes next, 
-    # plus the byte that follows.
-    bv_out = BitVector(size=0)
-    one = BitVector(intVal = 1, size = 8)
-    two = BitVector(intVal = 2, size = 8)
-    three = BitVector(intVal = 3, size = 8)
-    m = [[two,three,one,one],[one,two, three, one],[one, one, two, three], [three, one, one, two]]
-    for i in range(4):
-        for j in range(4):
-            a = m[j][0].gf_multiply_modular(bv[8*i*4:8*i*4+8], AES_modulus, 8)
-            b = m[j][1].gf_multiply_modular(bv[8*(i*4+1):8*(i*4+1)+8], AES_modulus, 8)
-            c = m[j][2].gf_multiply_modular(bv[8*(i*4+2):8*(i*4+2)+8], AES_modulus, 8)
-            d = m[j][3].gf_multiply_modular(bv[8*(i*4+3):8*(i*4+3)+8], AES_modulus, 8)
-            bv_out += (a^b^c^d)
-    return bv_out
-
-#Arguments:
-# iv: 128-bit initialization vector
-# image_file: input .ppm image file name
-# out_file: encrypted .ppm image file name
-# key_file: String of file name containing encryption key (in ASCII)
-#Function Descrption:
-# Encrypts image_file using CTR mode AES and writes said file to out_file. No
-# required return value.
-def ctr_aes_image(iv,image_file='image.ppm',out_file='enc_image.ppm',key_file='key.txt'):
-    genTables()
-    # read key from file, encrypt and expend is as 60 round keys (each 4 words)
-    round_keys = keyEncryptExpend(key_file)
-    header = b""
-    with open(image_file, "rb") as f:
+if __name__ == '__main__':
+    e = 3
+    # python breakRSA.py -e message.txt enc1.txt enc2.txt enc3.txt n_1_2_3.txt
+    if sys.argv[1] == "-e":
+        # generate 3 keys
+        n_set = set()
+        num_of_bits_desired = 128 
+        generator = rsa.PrimeGenerator( bits = num_of_bits_desired ) 
+        while len(n_set)!=3:             
+            p = generator.findPrime()
+            while rsa.check_MSB(p) or rsa.ckeck_coprime_e(p, e):
+                p = generator.findPrime()
+            q = generator.findPrime()  
+            while p==q or rsa.check_MSB(q) or rsa.ckeck_coprime_e(q, e):
+                q = generator.findPrime()
+            n_set.add(p*q)
+        with open(sys.argv[6], "w") as f:
+            for i in n_set:
+                f.write(str(i))
+    
+        # encrypt the file with 3 keys
         for i in range(3):
-            # read the header from image.ppm
-            header += f.readline()
-        # read other data from image.ppm
-        data = f.read()
-    # encrypt the image.ppm with AES
-    AES(iv, header, data, round_keys, out_file)
+            # encrypt the file by C = M^e mod n through Modular Exponentiation
+            encryptedText = rsa.rsa_encrypt(sys.argv[2], e, n_set[i])
+            # transform the ciphertext into the hex string and write out to the file
+            with open(sys.argv[i+2], 'w') as f:
+                f.write(encryptedText.get_hex_string_from_bitvector())
 
-
+    # decrypt the file with cube-root M^3 mod n1*n2*n3  
+    # python breakRSA.py -c enc1.txt enc2.txt enc3.txt n_1_2_3.txt cracked.txt
+    if sys.argv[1] == "-d":
+        with open(sys.argv[3], "r") as f:
+            p = int(f.readline().strip())
+        with open(sys.argv[4], "r") as f:
+            q = int(f.readline().strip())
+        # Calculate the modulus n = p*q
+        n = p*q
+        # Calculate the totient ϕ(n) = (p-1)*(q-1)
+        totient_n = (p-1)*(q-1)
+        # choose d as the multiplicative inverse of e modulo totient_n
+        # Calculate for the private exponent a value for d such that 
+        # d = e^(-1) mod ϕ(n) use the Extended Euclids Algorithm
+        d = findMI(e, totient_n)
+        # decrypt file by M = C^d mod n throgh Chinese Remainder Theorem
+        decryptedText = rsa_decrypt(sys.argv[2], d, n, p, q)
+        with open(sys.argv[5], "w") as f:
+            f.write(decryptedText.get_text_from_bitvector())

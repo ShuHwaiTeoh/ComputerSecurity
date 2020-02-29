@@ -128,7 +128,7 @@ def rsa_encrypt(fileName, e, n):
             bv = input_bv[j:j+128]            
         bv.pad_from_left(128)
         # C = M^e mod n
-        B = 65537
+        B = e
         A = int(bv)
         C = modular_Expo(A, B, n)
         output_bv += BitVector(intVal=C, size=256)
