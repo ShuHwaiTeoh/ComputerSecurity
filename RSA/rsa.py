@@ -83,7 +83,7 @@ class PrimeGenerator( object ):                                              #(A
 
 def check_MSB(number):
     bString = bin(number).replace("0b", "")
-    return bString[0] != "1"
+    return (bString[0] != "1" and bString[1] != "1")
 
 def ckeck_coprime_e(number, e):
     if e > (number-1):
@@ -124,6 +124,7 @@ def rsa_encrypt(fileName, e, n):
         if input_bv.length() < j+128:
             # padding the last byte with 0s
             bv = input_bv[j:] + BitVector(bitlist=[0] * (j+128-input_bv.length()))
+            print(bv)
         else:
             bv = input_bv[j:j+128]            
         bv.pad_from_left(128)
@@ -151,6 +152,7 @@ def rsa_decrypt(fileName, d, n, p, q):
         vq = modular_Expo(int(bv), d, q)
         M = (vp*xp+vq*xq) % n
         output_bv += BitVector(intVal=M, size=128)
+    print(output_bv[-128:])
     return output_bv
 
 ####################################  main  ######################################
@@ -170,6 +172,7 @@ if __name__ == '__main__':
         generator = PrimeGenerator( bits = num_of_bits_desired )              
         p = generator.findPrime()
         while check_MSB(p) or ckeck_coprime_e(p, e):
+            print(check_MSB(p))
             p = generator.findPrime()
         q = generator.findPrime()  
         while p==q or check_MSB(q) or ckeck_coprime_e(q, e):
@@ -188,7 +191,7 @@ if __name__ == '__main__':
             q = int(f.readline().strip())
         # Calculate the modulus n = p*q
         n = p*q
-        # Calculate the totient ϕ(n) = (p-1)*(q-1)
+        # Calculate the totient phi(n) = (p-1)*(q-1)
         totient_n = (p-1)*(q-1)
         # encrypt the file by C = M^e mod n through Modular Exponentiation
         encryptedText = rsa_encrypt(sys.argv[2], e, n)
@@ -205,13 +208,14 @@ if __name__ == '__main__':
             q = int(f.readline().strip())
         # Calculate the modulus n = p*q
         n = p*q
-        # Calculate the totient ϕ(n) = (p-1)*(q-1)
+        # Calculate the totient phi(n) = (p-1)*(q-1)
         totient_n = (p-1)*(q-1)
         # choose d as the multiplicative inverse of e modulo totient_n
         # Calculate for the private exponent a value for d such that 
-        # d = e^(-1) mod ϕ(n) use the Extended Euclids Algorithm
+        # d = e^(-1) mod phi(n) use the Extended Euclids Algorithm
         d = findMI(e, totient_n)
         # decrypt file by M = C^d mod n throgh Chinese Remainder Theorem
         decryptedText = rsa_decrypt(sys.argv[2], d, n, p, q)
-        with open(sys.argv[5], "w") as f:
-            f.write(decryptedText.get_text_from_bitvector())
+        with open(sys.argv[5], "wb") as f:
+            decryptedText.write_to_file(f)
+            # f.write(decryptedText.get_text_from_bitvector())
