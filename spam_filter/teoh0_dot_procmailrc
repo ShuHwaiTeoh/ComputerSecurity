@@ -1,0 +1,68 @@
+## Homework Number:  hw11
+## Name: Shu Hwai Teoh
+## ECN Login: teoh0
+## Due Date: Thursday 4/23/2020 at 4:29PM
+
+SHELL=/bin/sh
+PATH=/usr/local/lib/mh:$PATH
+MAILDIR=$HOME/Mail
+LOGFILE=$HOME/Mail/logfile
+SENDMAIL=/usr/sbin/sendmail
+#VERBOSE=1
+VERBOSE=0
+EOL="
+"
+LOG="$EOL$EOL$EOL"
+LOG="New message log:$EOL"
+LOG=`perl GET_MESSAGE_INDEX`
+LOG="$EOL"
+
+
+
+## Recipe_1:
+## 50
+## junkMail 1 through junkMail 50: multiple entries in the \From:" header.
+## trap the mail that have multiple entries in "From" header
+##
+:0 H:
+* ^From:.*>, <.*
+spamFolder_1
+
+
+
+
+
+## Recipe_2:
+## 13
+## junkMail 51 through junkMail 63: \Subject:" line in the email headers.
+## pick the uncommon words in the subject line
+##
+:0 H:
+* ^Subject: .*(ED medications)|(professional experience)|(master's degree)|(university graduate - available)|(imphotgence - buhy)|(UniversityDiplomas)|(NewDiploma)|(potteency - bbBuyy)|(buy cheap)|(theCertificate)|(GUARANTEED ACCREDITED)|(VerifiableDiploma)|(Magento, Inteveo)
+spamFolder_2
+
+
+
+## Recipe_3:
+## 3
+## junkMail 64 through junkMail 66: regex uncomman words in body
+##
+:0 B:
+* (Our New Blazin Sub-Penny Alert! This Company is about to take)|(http://google.com/translate)
+spamFolder_3
+
+
+
+
+## Recipe_4:
+## 8
+## junkMail 67 through junkMail 75: single recipe that contains compound rules
+## filter the email that have the following three strings at the same time
+##
+:0 HB:
+* ^Content-Type: text/plain
+* ^Content-Type: multipart/alternative
+* ^Content-Type: text/html
+* (charset=("Windows-1252"|utf-8))|(charset = "utf-8")
+spamFolder_4
+

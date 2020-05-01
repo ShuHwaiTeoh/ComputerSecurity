@@ -25,8 +25,8 @@ sudo iptables -t filter -X
 sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
 
 # Block a list of specic IP addresses for all incoming connections.
-sudo iptables -A INPUT -s 128.46.4.84 -j REJECT
-sudo iptables -A INPUT -s 128.46.4.86 -j REJECT
+sudo iptables -A INPUT -s 8.8.8.8 -j REJECT
+sudo iptables -A INPUT -s 10.0.0.24 -j REJECT
 
 # Block your computer from being pinged by all other hosts
 # -p: designate the protocal name
@@ -34,15 +34,15 @@ sudo iptables -A INPUT -p icmp --icmp-type echo-request -j REJECT
 
 # Set up port-forwarding from an unused port (5000) of your choice to port 22
 # enable port 5000 for incoming tcp packet
-sudo iptables -A INPUT -p tcp --dport 5000 -j ACCEPT
+sudo iptables -A INPUT -p tcp --dport 5001 -j ACCEPT
 # enable packet forwarding to port 22
 sudo iptables -A FORWARD -p tcp --dport 22 -j ACCEPT
 # forward packet from port 5000 to port 22
-sudo iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 5000 -j REDIRECT --to-port 22
+sudo iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 5001 -j REDIRECT --to-port 22
 
 # Allow for SSH access (port 22) to your machine from only the engineering.purdue.edu domain.
 sudo iptables -A INPUT -p tcp -s engineering.purdue.edu  --dport 22 -j ACCEPT
-sudo iptables -A INPUT -p tcp ! -s engineering.purdue.edu  --dport 22 -j REJECT
+# sudo iptables -A INPUT -p tcp ! -s engineering.purdue.edu  --dport 22 -j REJECT
 
 # allows only a single IP address in the internet to access your machine for the HTTP service.
 # https://www.baidu.com/: 103.235.46.39
